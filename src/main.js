@@ -1,17 +1,15 @@
 import iziToast from 'izitoast';
 import 'izitoast/dist/css/iziToast.min.css';
-import { getImage } from './js/pixabay-api';
-import { resetPage } from './js/pixabay-api';
-import { addPage } from './js/pixabay-api';
-import { addLoadStroke } from './js/render-functions';
+import { getImage, resetPage, addPage } from './js/pixabay-api';
+import { addLoadStroke, clearGallery, updateGallery } from './js/render-functions';
 import errorIcon from './img/icon.svg';
-
 
 const box = document.querySelector('.gallery');
 const load = document.querySelector('.loader');
 const addMoreButton = document.querySelector('.to-add');
 const form = document.querySelector('.form');
 const input = document.querySelector('.user-input');
+
 const iziOption = {
   messageColor: '#FAFAFB',
   messageSize: '16px',
@@ -23,25 +21,39 @@ const iziOption = {
   closeOnClick: true,
 };
 
-form.addEventListener('submit', event => {
+form.addEventListener('submit', async event => {
   event.preventDefault();
   let inputValue = input.value.trim();
   if (!inputValue) {
-    iziToast.show({
-      ...iziOption,
-      message: 'Please enter a search query.',
-    });
+    iziToast.show({ ...iziOption, message: 'Please enter a search query.' });
     return;
   }
-  box.innerHTML = '';
+  
+  clearGallery();
   resetPage();
   addLoadStroke(load);
-  getImage(inputValue);
+  
+  try {
+    const data = await getImage(inputValue, 1);
+    updateGallery(data);
+    input.value = '';
+  } catch (error) {
+    iziToast.show({ ...iziOption, message: 'Error fetching images. Try again.' });
+  }
 });
 
-addMoreButton.addEventListener('click', event => {
+addMoreButton.addEventListener('click', async () => {
   let inputValue = input.value.trim();
   addPage();
   addLoadStroke(load);
-  getImage(inputValue);
+  addMoreButton.disabled = true;
+  
+  try {
+    const data = await getImage(inputValue, addPage);
+    updateGallery(data);
+  } catch (error) {
+    iziToast.show({ ...iziOption, message: 'Failed to load more images.' });
+  }
+
+  addMoreButton.disabled = false;
 });
