@@ -32,6 +32,7 @@ form.addEventListener(`submit`, async (event) => {
   if (query !== lastQuery) {
     lastQuery = query;
     page = 1;
+    gallery.innerHTML = '';
   }
 
   gallery.innerHTML = ``;
@@ -73,7 +74,7 @@ loadBtn.addEventListener('click', async () => {
 
     if (page * limit >= totalCountOfResult) {
       loadBtn.classList.add('hidden');
-      iziToast.info({ message: "No more images to load!" });
+      iziToast.info({ message: "We're sorry, but you've reached the end of search results." });
     } else {
       loadBtn.classList.remove('hidden');
     }
